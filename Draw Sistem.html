@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MIDNIGHT GARAGE SYSTEM</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(15, 30, 49, 0.92);
+      --panel-2: #101f33;
+      --line: rgba(255,255,255,0.12);
+      --text: #f6f8fb;
+      --muted: #9fb0c3;
+      --accent: #42d392;
+      --accent-2: #56a8ff;
+      --warning: #ffbd4a;
+      --danger: #ff6577;
+      --keeper: #ffb84d;
+      --player: #59c3ff;
+      --shadow: 0 20px 55px rgba(0,0,0,.38);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(4, 12, 22, .78), rgba(4, 12, 22, .82)),
+        url('BG.jpg') center center / cover no-repeat fixed,
+        linear-gradient(145deg, #050b14 0%, #081526 52%, #06101c 100%);
+      padding: 22px;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .hero-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .hero h1 {
+      font-size: clamp(27px, 4vw, 46px);
+      line-height: 1;
+      margin: 0 0 9px;
+      letter-spacing: -.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.55;
+    }
+
+    .brand-logo {
+      width: clamp(74px, 9vw, 110px);
+      height: clamp(74px, 9vw, 110px);
+      object-fit: contain;
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.13);
+      padding: 10px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+      flex: 0 0 auto;
+    }
+
+    .hero-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      padding: 10px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(66,211,146,.28);
+      background: rgba(66,211,146,.09);
+      color: #b9f4db;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 16px rgba(66,211,146,.8);
+    }
+
+    .sponsor-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(340px, 34vw, 480px);
+      min-height: 145px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(7, 17, 31, .52);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .sponsor-logo {
+      width: 100%;
+      max-width: 440px;
+      max-height: 125px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.95fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(17,33,54,.96), rgba(9,20,35,.96));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 19px 13px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .card-head h2, .card-head h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .card-body { padding: 18px; }
+    .settings-grid { display: grid; gap: 13px; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    input[type="text"], textarea, select {
+      width: 100%;
+      color: var(--text);
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 13px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    input[type="text"], select { padding: 12px 13px; }
+
+    textarea {
+      min-height: 152px;
+      resize: vertical;
+      padding: 13px;
+      line-height: 1.5;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(66,211,146,.7);
+      box-shadow: 0 0 0 4px rgba(66,211,146,.10);
+      background: rgba(255,255,255,.075);
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      padding-bottom: 3px;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      flex: 0 0 min(220px, 75vw);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      padding: 12px 13px;
+      font-weight: 900;
+      text-align: left;
+      transition: .2s;
+    }
+
+    .tab-btn small {
+      display: block;
+      opacity: .68;
+      font-size: 11px;
+      margin-top: 3px;
+      font-weight: 700;
+    }
+
+    .tab-btn.active {
+      color: #eafff6;
+      border-color: rgba(66,211,146,.45);
+      background: linear-gradient(135deg, rgba(66,211,146,.17), rgba(86,168,255,.10));
+      box-shadow: inset 0 0 0 1px rgba(66,211,146,.09);
+    }
+
+    .team-editor {
+      display: grid;
+      gap: 9px;
+    }
+
+    .team-editor-row {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .team-letter {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: rgba(86,168,255,.12);
+      color: #dff0ff;
+      font-weight: 1000;
+      border: 1px solid rgba(86,168,255,.25);
+    }
+
+    .icon-btn {
+      border: 1px solid rgba(255,101,119,.25);
+      background: rgba(255,101,119,.10);
+      color: #ffdce1;
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-weight: 900;
+    }
+
+    .settings-actions, .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .settings-actions { margin-top: 2px; }
+
+    .text-settings-panel {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.028);
+    }
+
+    .text-settings-title {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .text-settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .list-box {
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      padding: 14px;
+      background: rgba(255,255,255,.026);
+    }
+
+    .list-box-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .list-box-head strong { font-size: 14px; }
+
+    .counter {
+      min-width: 34px;
+      height: 26px;
+      border-radius: 99px;
+      display: inline-grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 12px;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+    }
+
+    .helper {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .picker-card { margin-top: 18px; }
+
+    .picker-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, .7fr) minmax(0, 2.3fr);
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .draw-panel {
+      min-height: 404px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(145deg, rgba(66,211,146,.08), rgba(86,168,255,.035)),
+        rgba(255,255,255,.025);
+      padding: 17px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .draw-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 9px;
+    }
+
+    .role-btn {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 11px;
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      font-weight: 900;
+      transition: .2s;
+    }
+
+    .role-btn.active {
+      color: #eafff6;
+      background: linear-gradient(135deg, rgba(66,211,146,.17), rgba(86,168,255,.12));
+      border-color: rgba(66,211,146,.48);
+      box-shadow: inset 0 0 0 1px rgba(66,211,146,.08);
+    }
+
+
+    .assignment-controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.035);
+    }
+
+    .assignment-field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .assignment-field select {
+      padding: 10px 11px;
+      border-radius: 11px;
+    }
+
+    .assignment-field[hidden] { display: none; }
+
+    .mode-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .draw-stage {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px 10px;
+    }
+
+    .draw-stage .eyebrow {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      font-weight: 900;
+      margin-bottom: 11px;
+    }
+
+    .picked-name {
+      min-height: 112px;
+      display: grid;
+      place-items: center;
+      font-size: clamp(30px, 4vw, 58px);
+      font-weight: 1000;
+      letter-spacing: -.04em;
+      line-height: 1.04;
+      word-break: break-word;
+      text-wrap: balance;
+      text-shadow: 0 9px 25px rgba(0,0,0,.35);
+    }
+
+
+    .idle-logo {
+      width: min(240px, 72vw);
+      max-height: 180px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,.34));
+    }
+
+
+
+    .picked-name.batch-mode {
+      width: 100%;
+      min-height: 170px;
+      align-content: center;
+      gap: 7px;
+      font-size: clamp(17px, 2vw, 25px);
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    .batch-name {
+      width: min(100%, 430px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.055);
+      text-align: left;
+      text-shadow: none;
+    }
+
+    .batch-name-only {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .batch-person {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 1000;
+    }
+
+    .batch-team {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .picked-name.rolling {
+      animation: pulseRoll .11s infinite alternate;
+      filter: blur(.25px);
+    }
+
+    .picked-name.winner {
+      animation: winnerPop .65s cubic-bezier(.16,1.25,.32,1);
+    }
+
+    .destination {
+      color: var(--accent);
+      font-weight: 900;
+      min-height: 24px;
+      margin-top: 8px;
+    }
+
+    .space-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    kbd {
+      min-width: 58px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.19);
+      border-bottom-width: 3px;
+      background: rgba(255,255,255,.07);
+      font-weight: 900;
+    }
+
+    .primary-btn, .secondary-btn, .danger-btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 15px;
+      font-weight: 900;
+      transition: transform .15s, opacity .15s, box-shadow .15s;
+    }
+
+    .primary-btn {
+      color: #052015;
+      background: linear-gradient(135deg, #67e8b2, #42d392);
+      box-shadow: 0 10px 25px rgba(66,211,146,.20);
+    }
+
+    .secondary-btn {
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--line);
+    }
+
+    .danger-btn {
+      color: #ffdce1;
+      background: rgba(255,101,119,.11);
+      border: 1px solid rgba(255,101,119,.25);
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+    button:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+
+    .team-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .team-column {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: rgba(255,255,255,.027);
+      overflow: hidden;
+    }
+
+    .team-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .team-title {
+      margin: 0;
+      font-size: clamp(18px, 2.5vw, 25px);
+      line-height: 1.1;
+    }
+
+    .team-total {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .roster-section { padding: 14px; }
+    .roster-section + .roster-section { border-top: 1px solid var(--line); }
+
+    .roster-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .roster-list {
+      display: grid;
+      gap: 7px;
+      min-height: 42px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 42px;
+      border: 1px dashed rgba(255,255,255,.11);
+      border-radius: 10px;
+      color: rgba(159,176,195,.58);
+      font-size: 12px;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 11px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.075);
+      animation: rowIn .35s ease both;
+    }
+
+    .person-number {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 26px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.08);
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 11px;
+    }
+
+    .person-name {
+      min-width: 0;
+      flex: 1;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .role-tag {
+      flex: 0 0 auto;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 7px;
+      border-radius: 999px;
+    }
+
+    .role-tag { color: #e7f7ff; background: rgba(86,168,255,.14); }
+
+    .footer-actions { padding: 0 18px 18px; }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: min(380px, calc(100vw - 40px));
+      padding: 13px 15px;
+      border-radius: 13px;
+      background: #12233a;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: .25s;
+      z-index: 100;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: rgba(255,101,119,.42); color: #ffd8de; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(1,5,10,.78);
+      backdrop-filter: blur(8px);
+      z-index: 90;
+    }
+
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      width: min(760px, 100%);
+      max-height: 85vh;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #0c192a;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .modal h3 { margin: 0 0 7px; }
+    .modal p { color: var(--muted); line-height: 1.55; }
+
+    .summary-box {
+      white-space: pre-wrap;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 14px;
+      line-height: 1.6;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+
+    .page-view {
+      display: none;
+    }
+
+    .page-view.active {
+      display: block;
+      animation: pageFade .28s ease both;
+    }
+
+    .page-step-bar,
+    .draw-page-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(7, 17, 31, .70);
+      box-shadow: 0 12px 35px rgba(0,0,0,.24);
+      backdrop-filter: blur(8px);
+    }
+
+    .page-step-info {
+      min-width: 0;
+    }
+
+    .page-step-kicker {
+      display: block;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .page-step-title {
+      display: block;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .page-step-note {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .setup-next-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7, 17, 31, .66);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .setup-next-bar .primary-btn {
+      min-width: min(300px, 100%);
+      font-size: 15px;
+      padding: 14px 20px;
+    }
+
+    .draw-back-bar {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7, 17, 31, .66);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .draw-back-bar .secondary-btn {
+      min-width: min(240px, 100%);
+      white-space: nowrap;
+    }
+
+    #drawPage .picker-card {
+      margin-top: 0;
+    }
+
+    @keyframes pageFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseRoll {
+      from { transform: scale(.98); opacity: .62; }
+      to { transform: scale(1.025); opacity: 1; }
+    }
+
+    @keyframes winnerPop {
+      0% { transform: scale(.72) rotate(-2deg); opacity: 0; }
+      65% { transform: scale(1.08) rotate(1deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(-7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1020px) {
+      .top-grid, .picker-layout { grid-template-columns: 1fr; }
+      .draw-panel { min-height: 330px; }
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .hero { flex-direction: column; }
+      .hero-left { align-items: flex-start; }
+      .hero-right { width: 100%; justify-content: flex-start; }
+      .sponsor-box { width: 100%; min-width: 0; min-height: 125px; }
+      .sponsor-logo { width: 100%; max-width: 100%; max-height: 110px; }
+      .list-grid, .text-settings-grid { grid-template-columns: 1fr; }
+      .card-head { align-items: flex-start; }
+      .picker-layout { padding: 12px; }
+      .footer-actions { padding: 0 12px 12px; }
+      .picked-name { font-size: 38px; }
+      .page-step-bar, .draw-page-toolbar { align-items: stretch; flex-direction: column; }
+      .draw-back-bar .secondary-btn, .setup-next-bar .primary-btn { width: 100%; }
+      .setup-next-bar { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-left">
+        <img src="logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'" />
+        <div>
+          <h1 id="appTitleDisplay">MIDNIGHT GARAGE SYSTEM</h1>
+          <p id="appDescription">Tambah kategori dan pasukan mengikut keperluan. Cabutan Player dan Keeper akan diagihkan secara bergilir-gilir kepada semua pasukan dalam kategori yang dipilih.</p>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="status-pill"><span class="status-dot"></span> Data disimpan automatik</div>
+        <div class="sponsor-box">
+          <img src="sponsor.png" alt="Sponsor" class="sponsor-logo" onerror="this.parentElement.style.display='none'" />
+        </div>
+      </div>
+    </header>
+
+    <div id="setupPage" class="page-view active">
+      <div class="page-step-bar">
+        <div class="page-step-info">
+          <span class="page-step-kicker">Langkah 1 daripada 2</span>
+          <span class="page-step-title">Sediakan kategori, pasukan dan senarai</span>
+          <span class="page-step-note">Semua data disimpan automatik semasa anda membuat tetapan.</span>
+        </div>
+      </div>
+
+      <section class="top-grid">
+      <article class="card">
+        <div class="card-head">
+          <h2>Urus Kategori & Pasukan</h2>
+          <button id="addCategoryBtn" class="primary-btn" type="button">+ Tambah Kategori</button>
+        </div>
+        <div class="card-body settings-grid">
+          <div class="text-settings-panel">
+            <h3 class="text-settings-title">Tetapan Tajuk & Nama Senarai</h3>
+            <div class="field">
+              <label for="appTitleInput">Tajuk Utama Sistem</label>
+              <input id="appTitleInput" type="text" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Nama Senarai</label>
+              <div id="listTypeEditor" class="list-type-editor"></div>
+            </div>
+            <div class="settings-actions">
+              <button id="addListTypeBtn" class="secondary-btn" type="button">+ Tambah Senarai</button>
+            </div>
+            <div class="helper">Senarai boleh ditambah, dibuang dan dinamakan semula mengikut keperluan event.</div>
+          </div>
+
+          <div class="category-tabs" id="settingsCategoryTabs"></div>
+
+          <div class="field">
+            <label for="activeCategoryName">Nama Kategori</label>
+            <input id="activeCategoryName" type="text" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label>Nama Pasukan</label>
+            <div class="team-editor" id="teamEditor"></div>
+          </div>
+
+          <div class="settings-actions">
+            <button id="addTeamBtn" class="secondary-btn" type="button">+ Tambah Pasukan</button>
+            <button id="deleteCategoryBtn" class="danger-btn" type="button">Buang Kategori Ini</button>
+          </div>
+          <div class="helper">Minimum 2 pasukan bagi setiap kategori. Pasukan boleh ditambah sebanyak yang diperlukan.</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div><h2 id="participantSectionTitle">Senarai Peserta</h2></div>
+          <button id="clearCurrentListBtn" class="danger-btn" type="button">Kosongkan Senarai</button>
+        </div>
+        <div class="card-body">
+          <div class="category-tabs" id="participantCategoryTabs"></div>
+
+          <div class="list-grid" id="dynamicListGrid"></div>
+        </div>
+      </article>
+      </section>
+
+      <div class="setup-next-bar">
+        <button id="goToDrawBtn" class="primary-btn" type="button">Teruskan ke Halaman Cabutan →</button>
+      </div>
+    </div>
+
+    <div id="drawPage" class="page-view">
+      <div class="draw-page-toolbar">
+        <div class="page-step-info">
+          <span class="page-step-kicker">Langkah 2 daripada 2</span>
+          <span class="page-step-title">Halaman Cabutan</span>
+          <span class="page-step-note">Paparan ini hanya menunjukkan kawalan cabutan dan keputusan pasukan.</span>
+        </div>
+      </div>
+
+      <section class="card picker-card">
+      <div class="card-head">
+        <div><h2 id="activeCategoryTitle">Cabutan</h2></div>
+        <select id="categorySelect" aria-label="Pilih kategori" style="width:auto;min-width:210px"></select>
+      </div>
+
+      <div class="picker-layout">
+        <div class="draw-panel">
+          <div class="draw-controls" id="dynamicRoleControls"></div>
+
+          <div class="assignment-controls">
+            <div class="assignment-field">
+              <label for="assignmentMode">Cara Agihan</label>
+              <select id="assignmentMode">
+                <option value="auto">Auto Selang-Seli</option>
+                <option value="manual">Pilih Pasukan</option>
+              </select>
+            </div>
+            <div class="assignment-field">
+              <label for="drawCount">Bilangan Nama Sekali Cabut</label>
+              <select id="drawCount">
+                <option value="1">1 Nama</option>
+                <option value="3">3 Nama</option>
+                <option value="5">5 Nama</option>
+              </select>
+            </div>
+            <div class="assignment-field" id="manualTeamField" hidden>
+              <label for="manualTeamSelect">Masukkan Ke Pasukan</label>
+              <select id="manualTeamSelect"></select>
+            </div>
+            <div class="mode-note" id="assignmentNote">Nama akan diagihkan mengikut giliran pasukan secara automatik.</div>
+          </div>
+
+          <div class="draw-stage">
+            <div>
+              <div class="eyebrow" id="drawEyebrow">Sedia untuk cabutan player</div>
+              <div class="picked-name" id="pickedName"><img src="logo.png" alt="Logo" class="idle-logo" /></div>
+              <div class="destination" id="destination"></div>
+            </div>
+          </div>
+
+          <div class="space-hint"><kbd>SPACE</kbd> untuk cabut nama</div>
+          <button class="primary-btn" id="drawBtn" type="button">Cabut Nama Sekarang</button>
+        </div>
+
+        <div class="team-area" id="teamArea"></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="secondary-btn" id="summaryBtn" type="button">Lihat / Salin Keputusan</button>
+        <button class="secondary-btn" id="undoBtn" type="button">Undo Cabutan Terakhir</button>
+        <button class="danger-btn" id="resetCurrentBtn" type="button">Reset Kategori Ini</button>
+        <button class="danger-btn" id="resetAllBtn" type="button">Reset Semua</button>
+      </div>
+      </section>
+
+      <div class="draw-back-bar">
+        <button id="backToSetupBtn" class="secondary-btn" type="button">← Kembali ke Tetapan</button>
+      </div>
+    </div>
+  </main>
+
+  <audio id="spinSound" preload="auto" src="sound.mp3"></audio>
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="summaryModal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle">
+    <div class="modal">
+      <h3 id="summaryTitle">Keputusan Pembahagian Pasukan</h3>
+      <p>Keputusan bagi semua kategori dan semua pasukan.</p>
+      <div class="summary-box" id="summaryText"></div>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="closeSummaryBtn" type="button">Tutup</button>
+        <button class="primary-btn" id="copySummaryBtn" type="button">Salin Keputusan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const STORAGE_KEY = 'midnightGarageFlexibleListsV1';
+    const LEGACY_STORAGE_KEYS = ['footballRandomTeamPickerV2Dynamic', 'footballRandomTeamPickerV1'];
+    const ROLL_DURATION = 1000;
+    const ALLOWED_DRAW_COUNTS = [1, 3, 5];
+    const DEFAULT_TITLE = 'MIDNIGHT GARAGE SYSTEM';
+
+    const makeId = (prefix = 'id') => {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return `${prefix}-${window.crypto.randomUUID()}`;
+      }
+      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    };
+
+    const teamLetter = (index) => {
+      let number = index + 1;
+      let result = '';
+      while (number > 0) {
+        number--;
+        result = String.fromCharCode(65 + (number % 26)) + result;
+        number = Math.floor(number / 26);
+      }
+      return result;
+    };
+
+    const defaultListTypes = () => [
+      { id: 'players', label: 'Player' },
+      { id: 'keepers', label: 'Keeper' },
+      { id: 'third', label: 'Senarai 3' }
+    ];
+
+    const emptyMap = (listTypes, valueFactory) => Object.fromEntries(
+      listTypes.map(item => [item.id, valueFactory(item)])
+    );
+
+    const defaultTeam = (index, listTypes) => ({
+      id: makeId('team'),
+      name: `Team ${teamLetter(index)}`,
+      members: emptyMap(listTypes, () => [])
+    });
+
+    const defaultCategory = (index, listTypes) => {
+      const teams = [defaultTeam(0, listTypes), defaultTeam(1, listTypes)];
+      return {
+        id: makeId('category'),
+        name: `Kategori ${index + 1}`,
+        inputs: emptyMap(listTypes, () => ''),
+        teams,
+        nextTeamIndex: emptyMap(listTypes, () => 0),
+        manualTeamId: teams[0].id,
+        history: []
+      };
+    };
+
+    let currentView = 'setup';
+    let state = {
+      appTitle: DEFAULT_TITLE,
+      activeCategory: 0,
+      activeListId: 'players',
+      assignmentMode: 'auto',
+      drawCount: 1,
+      drawing: false,
+      listTypes: defaultListTypes(),
+      categories: []
+    };
+    state.categories = [defaultCategory(0, state.listTypes), defaultCategory(1, state.listTypes)];
+
+    const el = {
+      setupPage: document.getElementById('setupPage'),
+      drawPage: document.getElementById('drawPage'),
+      goToDrawBtn: document.getElementById('goToDrawBtn'),
+      backToSetupBtn: document.getElementById('backToSetupBtn'),
+      appTitleDisplay: document.getElementById('appTitleDisplay'),
+      appDescription: document.getElementById('appDescription'),
+      appTitleInput: document.getElementById('appTitleInput'),
+      listTypeEditor: document.getElementById('listTypeEditor'),
+      dynamicListGrid: document.getElementById('dynamicListGrid'),
+      dynamicRoleControls: document.getElementById('dynamicRoleControls'),
+      settingsCategoryTabs: document.getElementById('settingsCategoryTabs'),
+      participantCategoryTabs: document.getElementById('participantCategoryTabs'),
+      activeCategoryName: document.getElementById('activeCategoryName'),
+      teamEditor: document.getElementById('teamEditor'),
+      categorySelect: document.getElementById('categorySelect'),
+      activeCategoryTitle: document.getElementById('activeCategoryTitle'),
+      drawEyebrow: document.getElementById('drawEyebrow'),
+      pickedName: document.getElementById('pickedName'),
+      destination: document.getElementById('destination'),
+      drawBtn: document.getElementById('drawBtn'),
+      drawCount: document.getElementById('drawCount'),
+      teamArea: document.getElementById('teamArea'),
+      toast: document.getElementById('toast'),
+      summaryModal: document.getElementById('summaryModal'),
+      summaryText: document.getElementById('summaryText'),
+      undoBtn: document.getElementById('undoBtn'),
+      spinSound: document.getElementById('spinSound'),
+      deleteCategoryBtn: document.getElementById('deleteCategoryBtn'),
+      assignmentMode: document.getElementById('assignmentMode'),
+      manualTeamField: document.getElementById('manualTeamField'),
+      manualTeamSelect: document.getElementById('manualTeamSelect'),
+      assignmentNote: document.getElementById('assignmentNote')
+    };
+
+    const escapeHtml = (value) => String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+
+    const normalizeLines = (text) => {
+      const seen = new Set();
+      return String(text || '')
+        .split(/\r?\n/)
+        .map(name => name.trim())
+        .filter(name => {
+          const key = name.toLocaleLowerCase('ms');
+          if (!name || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    };
+
+    const getCategory = () => state.categories[state.activeCategory];
+    const getListType = (id = state.activeListId) => state.listTypes.find(item => item.id === id);
+    const listLabel = (id = state.activeListId) => getListType(id)?.label || 'Senarai';
+    const listHeading = (label) => /^senarai\b/i.test(label) ? label : `Senarai ${label}`;
+
+    const ensureActiveList = () => {
+      if (!state.listTypes.some(item => item.id === state.activeListId)) {
+        state.activeListId = state.listTypes[0]?.id || '';
+      }
+    };
+
+    const showIdleLogo = () => {
+      el.pickedName.classList.remove('batch-mode');
+      el.pickedName.innerHTML = '<img src="logo.png" alt="Logo" class="idle-logo">';
+    };
+
+    const saveState = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        console.warn('Tidak dapat menyimpan data:', error);
+      }
+    };
+
+    const sanitizeListTypes = (items) => {
+      const used = new Set();
+      const output = [];
+      (Array.isArray(items) ? items : []).forEach((item, index) => {
+        let id = String(item?.id || makeId('list'));
+        while (used.has(id)) id = makeId('list');
+        used.add(id);
+        output.push({
+          id,
+          label: String(item?.label || `Senarai ${index + 1}`).trim() || `Senarai ${index + 1}`
+        });
+      });
+      return output.length ? output : [{ id: makeId('list'), label: 'Senarai 1' }];
+    };
+
+    const sanitizeTeam = (team, index, listTypes) => {
+      const members = {};
+      listTypes.forEach(item => {
+        const directLegacy = Array.isArray(team?.[item.id]) ? team[item.id] : null;
+        const stored = Array.isArray(team?.members?.[item.id]) ? team.members[item.id] : directLegacy;
+        members[item.id] = Array.isArray(stored) ? stored.map(String) : [];
+      });
+      return {
+        id: String(team?.id || makeId('team')),
+        name: String(team?.name || `Team ${teamLetter(index)}`),
+        members
+      };
+    };
+
+    const sanitizeHistory = (history, listTypes) => {
+      const validIds = new Set(listTypes.map(item => item.id));
+      return (Array.isArray(history) ? history : []).map(item => {
+        const listId = String(item?.listId || item?.role || '');
+        if (!validIds.has(listId)) return null;
+        if (Array.isArray(item?.names)) {
+          return {
+            batchId: String(item.batchId || makeId('batch')),
+            listId,
+            names: item.names.map(String).filter(Boolean),
+            teamId: String(item.teamId || ''),
+            assignmentMode: item.assignmentMode === 'manual' ? 'manual' : 'auto',
+            previousNextTeamIndex: Number.isInteger(item.previousNextTeamIndex) ? item.previousNextTeamIndex : 0
+          };
+        }
+        if (item?.name) {
+          return {
+            batchId: String(item.batchId || makeId('legacy-batch')),
+            listId,
+            names: [String(item.name)],
+            teamId: String(item.teamId || ''),
+            assignmentMode: item.assignmentMode === 'manual' ? 'manual' : 'auto',
+            previousNextTeamIndex: Number.isInteger(item.previousNextTeamIndex) ? item.previousNextTeamIndex : 0
+          };
+        }
+        return null;
+      }).filter(item => item && item.names.length && item.teamId);
+    };
+
+    const sanitizeCategory = (category, index, listTypes) => {
+      const teams = (Array.isArray(category?.teams) ? category.teams : [])
+        .map((team, teamIndex) => sanitizeTeam(team, teamIndex, listTypes));
+      while (teams.length < 2) teams.push(defaultTeam(teams.length, listTypes));
+
+      const inputs = {};
+      const nextTeamIndex = {};
+      listTypes.forEach(item => {
+        inputs[item.id] = String(category?.inputs?.[item.id] || '');
+        nextTeamIndex[item.id] = Math.max(0, Number(category?.nextTeamIndex?.[item.id]) || 0) % teams.length;
+      });
+
+      const manualTeamId = teams.some(team => team.id === String(category?.manualTeamId || ''))
+        ? String(category.manualTeamId)
+        : teams[0].id;
+
+      return {
+        id: String(category?.id || makeId('category')),
+        name: String(category?.name || `Kategori ${index + 1}`),
+        inputs,
+        teams,
+        nextTeamIndex,
+        manualTeamId,
+        history: sanitizeHistory(category?.history, listTypes)
+      };
+    };
+
+    const migrateLegacyState = (legacy) => {
+      if (!legacy || !Array.isArray(legacy.categories) || !legacy.categories.length) return null;
+
+      const legacyKeys = ['players', 'keepers'];
+      const hasThird = legacy.categories.some(category =>
+        category?.inputs?.third || category?.teams?.some?.(team => Array.isArray(team?.third) && team.third.length)
+      ) || legacy?.uiText?.thirdLabel;
+      if (hasThird) legacyKeys.push('third');
+
+      const legacyLabels = {
+        players: legacy?.uiText?.playersLabel || 'Player',
+        keepers: legacy?.uiText?.keepersLabel || 'Keeper',
+        third: legacy?.uiText?.thirdLabel || 'Senarai 3'
+      };
+      const listTypes = legacyKeys.map(id => ({ id, label: String(legacyLabels[id]) }));
+
+      const categories = legacy.categories.map((category, index) => {
+        if (Array.isArray(category?.teams)) return sanitizeCategory(category, index, listTypes);
+
+        const teamA = {
+          id: makeId('team'),
+          name: category?.teamAName || 'Team A',
+          members: {
+            players: category?.teams?.A?.players || [],
+            keepers: category?.teams?.A?.keepers || [],
+            ...(hasThird ? { third: [] } : {})
+          }
+        };
+        const teamB = {
+          id: makeId('team'),
+          name: category?.teamBName || 'Team B',
+          members: {
+            players: category?.teams?.B?.players || [],
+            keepers: category?.teams?.B?.keepers || [],
+            ...(hasThird ? { third: [] } : {})
+          }
+        };
+        return sanitizeCategory({
+          name: category?.name,
+          inputs: category?.inputs,
+          teams: [teamA, teamB],
+          nextTeamIndex: {
+            players: category?.nextTeam?.players === 'B' ? 1 : 0,
+            keepers: category?.nextTeam?.keepers === 'B' ? 1 : 0,
+            ...(hasThird ? { third: 0 } : {})
+          },
+          manualTeamId: teamA.id,
+          history: []
+        }, index, listTypes);
+      });
+
+      return {
+        appTitle: String(legacy?.uiText?.appTitle || DEFAULT_TITLE),
+        activeCategory: Math.min(Math.max(0, Number(legacy.activeCategory) || 0), categories.length - 1),
+        activeListId: legacyKeys.includes(legacy.activeRole) ? legacy.activeRole : legacyKeys[0],
+        assignmentMode: legacy.assignmentMode === 'manual' ? 'manual' : 'auto',
+        drawCount: ALLOWED_DRAW_COUNTS.includes(Number(legacy.drawCount)) ? Number(legacy.drawCount) : 1,
+        drawing: false,
+        listTypes,
+        categories
+      };
+    };
+
+    const loadState = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (stored && Array.isArray(stored.categories) && stored.categories.length) {
+          const listTypes = sanitizeListTypes(stored.listTypes);
+          state = {
+            appTitle: String(stored.appTitle || DEFAULT_TITLE),
+            activeCategory: Math.min(Math.max(0, Number(stored.activeCategory) || 0), stored.categories.length - 1),
+            activeListId: String(stored.activeListId || listTypes[0].id),
+            assignmentMode: stored.assignmentMode === 'manual' ? 'manual' : 'auto',
+            drawCount: ALLOWED_DRAW_COUNTS.includes(Number(stored.drawCount)) ? Number(stored.drawCount) : 1,
+            drawing: false,
+            listTypes,
+            categories: stored.categories.map((category, index) => sanitizeCategory(category, index, listTypes))
+          };
+          ensureActiveList();
+          return;
+        }
+
+        for (const key of LEGACY_STORAGE_KEYS) {
+          const legacy = JSON.parse(localStorage.getItem(key));
+          const migrated = migrateLegacyState(legacy);
+          if (migrated) {
+            state = migrated;
+            ensureActiveList();
+            saveState();
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Data simpanan rosak. Menggunakan tetapan asal.', error);
+      }
+    };
+
+    let toastTimer;
+    const showToast = (message, isError = false) => {
+      clearTimeout(toastTimer);
+      el.toast.textContent = message;
+      el.toast.classList.toggle('error', isError);
+      el.toast.classList.add('show');
+      toastTimer = setTimeout(() => el.toast.classList.remove('show'), 3000);
+    };
+
+    const updatePageDescription = () => {
+      const labels = state.listTypes.map(item => item.label).join(', ');
+      el.appDescription.textContent = currentView === 'draw'
+        ? `Pilih kategori dan jenis senarai, kemudian tekan SPACE untuk membuat cabutan.`
+        : `Sediakan kategori, pasukan dan senarai (${labels}) sebelum masuk ke halaman cabutan.`;
+    };
+
+    const switchPage = (page) => {
+      if (state.drawing) {
+        showToast('Tunggu sehingga cabutan semasa selesai.', true);
+        return;
+      }
+      currentView = page === 'draw' ? 'draw' : 'setup';
+      el.setupPage.classList.toggle('active', currentView === 'setup');
+      el.drawPage.classList.toggle('active', currentView === 'draw');
+      updatePageDescription();
+      if (currentView === 'draw') render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const renderCategoryTabs = (container) => {
+      container.innerHTML = state.categories.map((category, index) => `
+        <button class="tab-btn ${index === state.activeCategory ? 'active' : ''}" type="button" data-category-index="${index}">
+          <span>${escapeHtml(category.name || `Kategori ${index + 1}`)}</span>
+          <small>${category.teams.length} pasukan</small>
+        </button>
+      `).join('');
+    };
+
+    const renderListTypeEditor = () => {
+      el.listTypeEditor.innerHTML = state.listTypes.map((item, index) => `
+        <div class="list-type-row">
+          <span class="team-letter">${index + 1}</span>
+          <input type="text" value="${escapeHtml(item.label)}" data-list-label-id="${escapeHtml(item.id)}" autocomplete="off" />
+          <button class="icon-btn" type="button" data-remove-list-id="${escapeHtml(item.id)}" ${state.listTypes.length <= 1 ? 'disabled' : ''}>Buang</button>
+        </div>
+      `).join('');
+    };
+
+    const renderTeamEditor = (category) => {
+      el.teamEditor.innerHTML = category.teams.map((team, index) => `
+        <div class="team-editor-row">
+          <span class="team-letter">${teamLetter(index)}</span>
+          <input type="text" value="${escapeHtml(team.name)}" data-team-name-index="${index}" autocomplete="off" />
+          <button class="icon-btn" type="button" data-remove-team-index="${index}" ${category.teams.length <= 2 ? 'disabled' : ''}>Buang</button>
+        </div>
+      `).join('');
+    };
+
+    const renderInputLists = (category) => {
+      el.dynamicListGrid.innerHTML = state.listTypes.map(item => `
+        <div class="list-box">
+          <div class="list-box-head">
+            <strong>${escapeHtml(listHeading(item.label))}</strong>
+            <span class="counter" data-list-counter-id="${escapeHtml(item.id)}">${normalizeLines(category.inputs[item.id]).length}</span>
+          </div>
+          <textarea data-list-input-id="${escapeHtml(item.id)}" placeholder="Masukkan satu nama ${escapeHtml(item.label)} pada setiap baris.">${escapeHtml(category.inputs[item.id])}</textarea>
+          <div class="helper">Nama kosong dan nama berulang akan diabaikan secara automatik.</div>
+        </div>
+      `).join('');
+    };
+
+    const renderRoleControls = () => {
+      el.dynamicRoleControls.innerHTML = state.listTypes.map(item => `
+        <button type="button" class="role-btn ${item.id === state.activeListId ? 'active' : ''}" data-list-role-id="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button>
+      `).join('');
+    };
+
+    const rosterHtml = (names, label) => {
+      if (!names.length) return '<div class="empty">Belum ada nama</div>';
+      return names.map((name, index) => `
+        <div class="person">
+          <span class="person-number">${index + 1}</span>
+          <span class="person-name">${escapeHtml(name)}</span>
+          <span class="role-tag">${escapeHtml(label.toUpperCase())}</span>
+        </div>
+      `).join('');
+    };
+
+    const renderTeamArea = (category) => {
+      el.teamArea.innerHTML = category.teams.map(team => {
+        const total = state.listTypes.reduce((sum, item) => sum + team.members[item.id].length, 0);
+        const sections = state.listTypes.map(item => `
+          <div class="roster-section">
+            <div class="roster-label"><span>${escapeHtml(item.label)}</span><span>${team.members[item.id].length}</span></div>
+            <div class="roster-list">${rosterHtml(team.members[item.id], item.label)}</div>
+          </div>
+        `).join('');
+        return `
+          <article class="team-column">
+            <div class="team-header">
+              <h3 class="team-title">${escapeHtml(team.name)}</h3>
+              <span class="team-total">${total} peserta</span>
+            </div>
+            ${sections}
+          </article>
+        `;
+      }).join('');
+    };
+
+    const renderDrawNames = (results, showTeam) => {
+      if (results.length === 1) {
+        el.pickedName.classList.remove('batch-mode');
+        el.pickedName.textContent = results[0].name;
+        return;
+      }
+      el.pickedName.classList.add('batch-mode');
+      el.pickedName.innerHTML = results.map(item => `
+        <div class="batch-name ${showTeam ? '' : 'batch-name-only'}">
+          <span class="batch-person">${escapeHtml(item.name)}</span>
+          ${showTeam ? `<span class="batch-team">${escapeHtml(item.teamName || '')}</span>` : ''}
+        </div>
+      `).join('');
+    };
+
+    const render = ({ preserveDrawMessage = false } = {}) => {
+      ensureActiveList();
+      const category = getCategory();
+      if (!category) return;
+
+      document.title = state.appTitle || DEFAULT_TITLE;
+      el.appTitleDisplay.textContent = state.appTitle || DEFAULT_TITLE;
+      el.appTitleInput.value = state.appTitle || DEFAULT_TITLE;
+      updatePageDescription();
+
+      renderCategoryTabs(el.settingsCategoryTabs);
+      renderCategoryTabs(el.participantCategoryTabs);
+      renderListTypeEditor();
+      renderTeamEditor(category);
+      renderInputLists(category);
+      renderRoleControls();
+      renderTeamArea(category);
+
+      el.activeCategoryName.value = category.name;
+      el.categorySelect.innerHTML = state.categories.map((item, index) =>
+        `<option value="${index}">${escapeHtml(item.name || `Kategori ${index + 1}`)}</option>`
+      ).join('');
+      el.categorySelect.value = String(state.activeCategory);
+      el.activeCategoryTitle.textContent = `Cabutan: ${category.name || `Kategori ${state.activeCategory + 1}`}`;
+
+      if (!category.teams.some(team => team.id === category.manualTeamId)) {
+        category.manualTeamId = category.teams[0].id;
+      }
+      el.assignmentMode.value = state.assignmentMode;
+      el.drawCount.value = String(state.drawCount);
+      el.manualTeamField.hidden = state.assignmentMode !== 'manual';
+      el.manualTeamSelect.innerHTML = category.teams.map(team =>
+        `<option value="${escapeHtml(team.id)}">${escapeHtml(team.name)}</option>`
+      ).join('');
+      el.manualTeamSelect.value = category.manualTeamId;
+
+      const nextIndex = category.nextTeamIndex[state.activeListId] % category.teams.length;
+      const nextTeam = category.teams[nextIndex];
+      el.assignmentNote.textContent = state.assignmentMode === 'manual'
+        ? `${state.drawCount} nama akan masuk ke pasukan yang dipilih.`
+        : `${state.drawCount} nama akan masuk ${nextTeam.name}. Cabutan seterusnya berpindah ke pasukan berikutnya.`;
+
+      if (!preserveDrawMessage && !state.drawing) {
+        el.drawEyebrow.textContent = `Sedia untuk cabutan ${listLabel()}`;
+        showIdleLogo();
+        el.destination.textContent = '';
+        el.pickedName.classList.remove('rolling', 'winner');
+      }
+
+      el.undoBtn.disabled = category.history.length === 0;
+      el.drawBtn.disabled = state.drawing;
+      el.drawBtn.textContent = `Cabut ${state.drawCount} Nama Sekarang`;
+      el.deleteCategoryBtn.disabled = state.categories.length <= 1;
+    };
+
+    const setActiveCategory = (index) => {
+      if (state.drawing) return;
+      const value = Number(index);
+      if (!Number.isInteger(value) || !state.categories[value]) return;
+      state.activeCategory = value;
+      saveState();
+      render();
+    };
+
+    const setActiveList = (id) => {
+      if (state.drawing || !state.listTypes.some(item => item.id === id)) return;
+      state.activeListId = id;
+      saveState();
+      render();
+    };
+
+    const setAssignmentMode = (mode) => {
+      if (state.drawing) return;
+      state.assignmentMode = mode === 'manual' ? 'manual' : 'auto';
+      saveState();
+      render();
+    };
+
+    const setDrawCount = (count) => {
+      if (state.drawing) return;
+      const value = Number(count);
+      state.drawCount = ALLOWED_DRAW_COUNTS.includes(value) ? value : 1;
+      saveState();
+      render();
+    };
+
+    const setManualTeam = (teamId) => {
+      if (state.drawing) return;
+      const category = getCategory();
+      if (!category.teams.some(team => team.id === teamId)) return;
+      category.manualTeamId = teamId;
+      saveState();
+      render({ preserveDrawMessage: true });
+    };
+
+    const nextCategoryName = () => {
+      let number = 1;
+      const names = new Set(state.categories.map(category => category.name.trim().toLocaleLowerCase('ms')));
+      while (names.has(`kategori ${number}`)) number++;
+      return `Kategori ${number}`;
+    };
+
+    const addCategory = () => {
+      if (state.drawing) return;
+      const category = defaultCategory(state.categories.length, state.listTypes);
+      category.name = nextCategoryName();
+      state.categories.push(category);
+      state.activeCategory = state.categories.length - 1;
+      saveState();
+      render();
+      showToast(`${category.name} telah ditambah.`);
+    };
+
+    const deleteCategory = () => {
+      if (state.drawing) return;
+      if (state.categories.length <= 1) {
+        showToast('Sekurang-kurangnya satu kategori perlu dikekalkan.', true);
+        return;
+      }
+      const category = getCategory();
+      if (!confirm(`Buang kategori "${category.name}" bersama semua senarai dan keputusan?`)) return;
+      state.categories.splice(state.activeCategory, 1);
+      state.activeCategory = Math.min(state.activeCategory, state.categories.length - 1);
+      saveState();
+      render();
+      showToast('Kategori telah dibuang.');
+    };
+
+    const addTeam = () => {
+      if (state.drawing) return;
+      const category = getCategory();
+      const team = defaultTeam(category.teams.length, state.listTypes);
+      category.teams.push(team);
+      saveState();
+      render({ preserveDrawMessage: true });
+      showToast(`${team.name} telah ditambah.`);
+    };
+
+    const removeTeam = (index) => {
+      if (state.drawing) return;
+      const category = getCategory();
+      if (category.teams.length <= 2) {
+        showToast('Minimum 2 pasukan diperlukan.', true);
+        return;
+      }
+      const team = category.teams[index];
+      if (!team) return;
+      const assignedCount = state.listTypes.reduce((sum, item) => sum + team.members[item.id].length, 0);
+      const warning = assignedCount
+        ? `Pasukan "${team.name}" mempunyai ${assignedCount} nama. Semua nama akan dipulangkan ke senarai asal. Teruskan?`
+        : `Buang pasukan "${team.name}"?`;
+      if (!confirm(warning)) return;
+
+      state.listTypes.forEach(item => {
+        category.inputs[item.id] = normalizeLines([
+          ...team.members[item.id],
+          ...normalizeLines(category.inputs[item.id])
+        ].join('\n')).join('\n');
+      });
+      category.history = category.history.filter(item => item.teamId !== team.id);
+      category.teams.splice(index, 1);
+      state.listTypes.forEach(item => {
+        category.nextTeamIndex[item.id] %= category.teams.length;
+      });
+      if (!category.teams.some(item => item.id === category.manualTeamId)) {
+        category.manualTeamId = category.teams[0].id;
+      }
+      saveState();
+      render();
+      showToast(`${team.name} telah dibuang.`);
+    };
+
+    const updateCategoryName = (value) => {
+      const category = getCategory();
+      category.name = String(value).trim() || `Kategori ${state.activeCategory + 1}`;
+      saveState();
+      render({ preserveDrawMessage: true });
+    };
+
+    const updateTeamName = (index, value) => {
+      const category = getCategory();
+      const team = category.teams[index];
+      if (!team) return;
+      team.name = String(value).trim() || `Team ${teamLetter(index)}`;
+      saveState();
+      render({ preserveDrawMessage: true });
+    };
+
+    const addListType = () => {
+      if (state.drawing) return;
+      let number = state.listTypes.length + 1;
+      const labels = new Set(state.listTypes.map(item => item.label.toLocaleLowerCase('ms')));
+      while (labels.has(`senarai ${number}`)) number++;
+      const item = { id: makeId('list'), label: `Senarai ${number}` };
+      state.listTypes.push(item);
+      state.categories.forEach(category => {
+        category.inputs[item.id] = '';
+        category.nextTeamIndex[item.id] = 0;
+        category.teams.forEach(team => team.members[item.id] = []);
+      });
+      state.activeListId = item.id;
+      saveState();
+      render();
+      showToast(`${item.label} telah ditambah.`);
+    };
+
+    const removeListType = (id) => {
+      if (state.drawing) return;
+      if (state.listTypes.length <= 1) {
+        showToast('Sekurang-kurangnya satu senarai perlu dikekalkan.', true);
+        return;
+      }
+      const item = getListType(id);
+      if (!item) return;
+      const count = state.categories.reduce((total, category) => {
+        const pending = normalizeLines(category.inputs[id]).length;
+        const assigned = category.teams.reduce((sum, team) => sum + team.members[id].length, 0);
+        return total + pending + assigned;
+      }, 0);
+      const warning = count
+        ? `Buang "${item.label}"? Sebanyak ${count} nama dalam senarai dan pasukan akan turut dipadam.`
+        : `Buang "${item.label}"?`;
+      if (!confirm(warning)) return;
+
+      state.listTypes = state.listTypes.filter(current => current.id !== id);
+      state.categories.forEach(category => {
+        delete category.inputs[id];
+        delete category.nextTeamIndex[id];
+        category.teams.forEach(team => delete team.members[id]);
+        category.history = category.history.filter(entry => entry.listId !== id);
+      });
+      ensureActiveList();
+      saveState();
+      render();
+      showToast(`${item.label} telah dibuang.`);
+    };
+
+    const updateListLabel = (id, value) => {
+      const item = getListType(id);
+      if (!item) return;
+      const index = state.listTypes.findIndex(current => current.id === id);
+      item.label = String(value).trim() || `Senarai ${index + 1}`;
+      saveState();
+      render({ preserveDrawMessage: true });
+    };
+
+    const updateListInput = (id, value, counterElement) => {
+      const category = getCategory();
+      if (!(id in category.inputs)) return;
+      category.inputs[id] = value;
+      if (counterElement) counterElement.textContent = normalizeLines(value).length;
+      saveState();
+    };
+
+    const secureRandomIndex = (length) => {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const max = Math.floor(0xFFFFFFFF / length) * length;
+        const array = new Uint32Array(1);
+        let value;
+        do {
+          window.crypto.getRandomValues(array);
+          value = array[0];
+        } while (value >= max);
+        return value % length;
+      }
+      return Math.floor(Math.random() * length);
+    };
+
+    const pickUniqueRandom = (items, count) => {
+      const pool = [...items];
+      const selected = [];
+      while (selected.length < count && pool.length) {
+        selected.push(pool.splice(secureRandomIndex(pool.length), 1)[0]);
+      }
+      return selected;
+    };
+
+    const startSpinSound = async () => {
+      if (!el.spinSound) return;
+      try {
+        el.spinSound.loop = true;
+        el.spinSound.currentTime = 0;
+        await el.spinSound.play();
+      } catch (error) {
+        console.warn('Sound tidak dapat dimainkan:', error);
+      }
+    };
+
+    const stopSpinSound = () => {
+      if (!el.spinSound) return;
+      el.spinSound.pause();
+      el.spinSound.currentTime = 0;
+      el.spinSound.loop = false;
+    };
+
+    const drawName = () => {
+      if (state.drawing) return;
+      const category = getCategory();
+      const listId = state.activeListId;
+      const names = normalizeLines(category.inputs[listId]);
+      const count = state.drawCount;
+
+      if (!names.length) {
+        showToast(`Tiada nama dalam ${listHeading(listLabel(listId))}.`, true);
+        return;
+      }
+      if (names.length < count) {
+        showToast(`${listHeading(listLabel(listId))} hanya ada ${names.length} nama. Pilih bilangan cabutan yang lebih kecil.`, true);
+        return;
+      }
+      if (category.teams.length < 2) {
+        showToast('Kategori ini memerlukan sekurang-kurangnya 2 pasukan.', true);
+        return;
+      }
+
+      let teamIndex;
+      if (state.assignmentMode === 'manual') {
+        teamIndex = category.teams.findIndex(team => team.id === category.manualTeamId);
+        if (teamIndex < 0) teamIndex = 0;
+      } else {
+        teamIndex = category.nextTeamIndex[listId] % category.teams.length;
+      }
+      const assignedTeam = category.teams[teamIndex];
+      const previousNextTeamIndex = category.nextTeamIndex[listId];
+
+      state.drawing = true;
+      el.drawBtn.disabled = true;
+      el.pickedName.classList.remove('winner');
+      el.pickedName.classList.add('rolling');
+      el.destination.textContent = '';
+      el.drawEyebrow.textContent = `Sedang membuat cabutan ${count} nama...`;
+      startSpinSound();
+
+      const rollStart = performance.now();
+      const roll = (now) => {
+        renderDrawNames(pickUniqueRandom(names, count).map(name => ({ name })), false);
+        if (now - rollStart < ROLL_DURATION) {
+          requestAnimationFrame(roll);
+          return;
+        }
+
+        const winners = pickUniqueRandom(names, count);
+        assignedTeam.members[listId].push(...winners);
+        const winnerKeys = new Set(winners.map(name => name.toLocaleLowerCase('ms')));
+        category.inputs[listId] = names
+          .filter(name => !winnerKeys.has(name.toLocaleLowerCase('ms')))
+          .join('\n');
+
+        category.history.push({
+          batchId: makeId('batch'),
+          listId,
+          names: [...winners],
+          teamId: assignedTeam.id,
+          assignmentMode: state.assignmentMode,
+          previousNextTeamIndex
+        });
+
+        if (state.assignmentMode === 'auto') {
+          category.nextTeamIndex[listId] = (teamIndex + 1) % category.teams.length;
+        }
+
+        state.drawing = false;
+        stopSpinSound();
+        saveState();
+        render({ preserveDrawMessage: true });
+        renderDrawNames(winners.map(name => ({ name, teamName: assignedTeam.name })), true);
+        el.pickedName.classList.remove('rolling');
+        void el.pickedName.offsetWidth;
+        el.pickedName.classList.add('winner');
+        el.drawEyebrow.textContent = count === 1
+          ? `${listLabel(listId)} terpilih`
+          : `${count} ${listLabel(listId)} terpilih`;
+        el.destination.textContent = count === 1
+          ? `Masuk ${assignedTeam.name}`
+          : `Semua masuk ${assignedTeam.name}`;
+        el.drawBtn.disabled = false;
+        showToast(`${count} nama dimasukkan ke ${assignedTeam.name}.`);
+      };
+      requestAnimationFrame(roll);
+    };
+
+    const undoLast = () => {
+      if (state.drawing) return;
+      const category = getCategory();
+      const last = category.history.pop();
+      if (!last) {
+        showToast('Tiada cabutan untuk di-undo.', true);
+        return;
+      }
+
+      const listId = last.listId || last.role;
+      const names = Array.isArray(last.names) ? last.names : [last.name].filter(Boolean);
+      const team = category.teams.find(item => item.id === last.teamId);
+      if (team && team.members[listId]) {
+        names.forEach(name => {
+          const position = team.members[listId].lastIndexOf(name);
+          if (position >= 0) team.members[listId].splice(position, 1);
+        });
+      }
+      category.inputs[listId] = normalizeLines([
+        ...names,
+        ...normalizeLines(category.inputs[listId])
+      ].join('\n')).join('\n');
+      if (Number.isInteger(last.previousNextTeamIndex)) {
+        category.nextTeamIndex[listId] = last.previousNextTeamIndex % category.teams.length;
+      }
+      saveState();
+      render();
+      showToast(`Cabutan ${names.length} nama telah di-undo.`);
+    };
+
+    const clearCurrentInputLists = () => {
+      if (state.drawing) return;
+      const category = getCategory();
+      if (state.listTypes.every(item => !category.inputs[item.id].trim())) {
+        showToast('Semua senarai memang sudah kosong.', true);
+        return;
+      }
+      if (!confirm('Kosongkan semua senarai nama? Nama yang sudah masuk pasukan tidak akan dipadam.')) return;
+      state.listTypes.forEach(item => category.inputs[item.id] = '');
+      saveState();
+      render();
+      showToast('Semua senarai telah dikosongkan.');
+    };
+
+    const resetCurrent = () => {
+      if (state.drawing) return;
+      if (!confirm('Reset kategori ini? Semua nama dalam pasukan akan dipulangkan ke senarai asal.')) return;
+      const category = getCategory();
+      state.listTypes.forEach(item => {
+        const assigned = category.teams.flatMap(team => team.members[item.id]);
+        category.inputs[item.id] = normalizeLines([
+          ...assigned,
+          ...normalizeLines(category.inputs[item.id])
+        ].join('\n')).join('\n');
+        category.nextTeamIndex[item.id] = 0;
+      });
+      category.teams.forEach(team => {
+        state.listTypes.forEach(item => team.members[item.id] = []);
+      });
+      category.manualTeamId = category.teams[0].id;
+      category.history = [];
+      saveState();
+      render();
+      showToast('Kategori ini telah direset.');
+    };
+
+    const resetAll = () => {
+      if (state.drawing) return;
+      if (!confirm('Reset SEMUA kategori, pasukan, senarai nama dan keputusan?')) return;
+      const savedTitle = state.appTitle;
+      const savedListTypes = state.listTypes.map(item => ({ ...item }));
+      state = {
+        appTitle: savedTitle,
+        activeCategory: 0,
+        activeListId: savedListTypes[0].id,
+        assignmentMode: 'auto',
+        drawCount: 1,
+        drawing: false,
+        listTypes: savedListTypes,
+        categories: [defaultCategory(0, savedListTypes), defaultCategory(1, savedListTypes)]
+      };
+      saveState();
+      render();
+      showToast('Semua data telah direset.');
+    };
+
+    const teamSummary = (team) => {
+      const sections = state.listTypes.map(item => {
+        const names = team.members[item.id];
+        const lines = names.length
+          ? names.map((name, index) => `  ${index + 1}. ${name}`).join('\n')
+          : '  - Tiada -';
+        return `${item.label.toUpperCase()}:\n${lines}`;
+      }).join('\n');
+      return `${team.name}\n${sections}`;
+    };
+
+    const buildSummary = () => state.categories.map((category, index) => {
+      const heading = category.name || `Kategori ${index + 1}`;
+      return `${heading}\n${'='.repeat(Math.min(heading.length, 40))}\n\n${category.teams.map(teamSummary).join('\n\n')}`;
+    }).join('\n\n----------------------------------------\n\n');
+
+    const openSummary = () => {
+      el.summaryText.textContent = buildSummary();
+      el.summaryModal.classList.add('open');
+    };
+    const closeSummary = () => el.summaryModal.classList.remove('open');
+
+    const copySummary = async () => {
+      const text = buildSummary();
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Keputusan berjaya disalin.');
+      } catch (error) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        temp.remove();
+        showToast('Keputusan berjaya disalin.');
+      }
+    };
+
+    const categoryTabClick = (event) => {
+      const button = event.target.closest('[data-category-index]');
+      if (button) setActiveCategory(button.dataset.categoryIndex);
+    };
+
+    el.appTitleInput.addEventListener('input', event => {
+      state.appTitle = event.target.value;
+      el.appTitleDisplay.textContent = state.appTitle || DEFAULT_TITLE;
+      document.title = state.appTitle || DEFAULT_TITLE;
+      saveState();
+    });
+    el.appTitleInput.addEventListener('blur', event => {
+      state.appTitle = event.target.value.trim() || DEFAULT_TITLE;
+      saveState();
+      render({ preserveDrawMessage: true });
+    });
+
+    el.listTypeEditor.addEventListener('change', event => {
+      const input = event.target.closest('[data-list-label-id]');
+      if (input) updateListLabel(input.dataset.listLabelId, input.value);
+    });
+    el.listTypeEditor.addEventListener('blur', event => {
+      const input = event.target.closest('[data-list-label-id]');
+      if (input) updateListLabel(input.dataset.listLabelId, input.value);
+    }, true);
+    el.listTypeEditor.addEventListener('click', event => {
+      const button = event.target.closest('[data-remove-list-id]');
+      if (button) removeListType(button.dataset.removeListId);
+    });
+
+    el.dynamicListGrid.addEventListener('input', event => {
+      const textarea = event.target.closest('[data-list-input-id]');
+      if (!textarea) return;
+      const counter = el.dynamicListGrid.querySelector(`[data-list-counter-id="${CSS.escape(textarea.dataset.listInputId)}"]`);
+      updateListInput(textarea.dataset.listInputId, textarea.value, counter);
+    });
+
+    el.dynamicRoleControls.addEventListener('click', event => {
+      const button = event.target.closest('[data-list-role-id]');
+      if (button) setActiveList(button.dataset.listRoleId);
+    });
+
+    el.settingsCategoryTabs.addEventListener('click', categoryTabClick);
+    el.participantCategoryTabs.addEventListener('click', categoryTabClick);
+    el.categorySelect.addEventListener('change', event => setActiveCategory(event.target.value));
+    el.assignmentMode.addEventListener('change', event => setAssignmentMode(event.target.value));
+    el.drawCount.addEventListener('change', event => setDrawCount(event.target.value));
+    el.manualTeamSelect.addEventListener('change', event => setManualTeam(event.target.value));
+    el.activeCategoryName.addEventListener('change', event => updateCategoryName(event.target.value));
+    el.activeCategoryName.addEventListener('blur', event => updateCategoryName(event.target.value));
+
+    el.teamEditor.addEventListener('change', event => {
+      const input = event.target.closest('[data-team-name-index]');
+      if (input) updateTeamName(Number(input.dataset.teamNameIndex), input.value);
+    });
+    el.teamEditor.addEventListener('blur', event => {
+      const input = event.target.closest('[data-team-name-index]');
+      if (input) updateTeamName(Number(input.dataset.teamNameIndex), input.value);
+    }, true);
+    el.teamEditor.addEventListener('click', event => {
+      const button = event.target.closest('[data-remove-team-index]');
+      if (button) removeTeam(Number(button.dataset.removeTeamIndex));
+    });
+
+    el.goToDrawBtn.addEventListener('click', () => {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+      switchPage('draw');
+    });
+    el.backToSetupBtn.addEventListener('click', () => switchPage('setup'));
+    el.drawBtn.addEventListener('click', drawName);
+    el.undoBtn.addEventListener('click', undoLast);
+    document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+    document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategory);
+    document.getElementById('addTeamBtn').addEventListener('click', addTeam);
+    document.getElementById('addListTypeBtn').addEventListener('click', addListType);
+    document.getElementById('clearCurrentListBtn').addEventListener('click', clearCurrentInputLists);
+    document.getElementById('resetCurrentBtn').addEventListener('click', resetCurrent);
+    document.getElementById('resetAllBtn').addEventListener('click', resetAll);
+    document.getElementById('summaryBtn').addEventListener('click', openSummary);
+    document.getElementById('closeSummaryBtn').addEventListener('click', closeSummary);
+    document.getElementById('copySummaryBtn').addEventListener('click', copySummary);
+
+    el.summaryModal.addEventListener('click', event => {
+      if (event.target === el.summaryModal) closeSummary();
+    });
+    document.addEventListener('keydown', event => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag);
+      if (event.code === 'Space' && !isTyping && currentView === 'draw') {
+        event.preventDefault();
+        drawName();
+      }
+      if (event.key === 'Escape') closeSummary();
+    });
+    window.addEventListener('beforeunload', stopSpinSound);
+
+    loadState();
+    render();
+    switchPage('setup');
+  })();
+</script>
+
+
+</body>
+</html>
