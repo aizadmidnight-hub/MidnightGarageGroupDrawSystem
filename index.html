@@ -21,6 +21,21 @@
       --shadow: 0 20px 55px rgba(0,0,0,.38);
     }
 
+    .role-gate { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgba(2,7,13,.94); backdrop-filter:blur(12px); }
+    .role-gate.hidden { display:none; }
+    .gate-card { width:min(460px,100%); padding:24px; border:1px solid var(--line); border-radius:22px; background:linear-gradient(180deg,#12233a,#091525); box-shadow:var(--shadow); }
+    .gate-card h2 { margin:0 0 8px; }
+    .gate-card p { color:var(--muted); line-height:1.5; }
+    .gate-actions { display:grid; gap:10px; margin-top:18px; }
+    .gate-card input { margin:10px 0; padding:12px; width:100%; color:var(--text); background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px; }
+    .gate-status { font-size:12px; color:var(--muted); margin-top:12px; }
+    .live-badge { display:none; }
+    body.live-mode .live-badge { display:inline-flex; }
+    body.live-mode #setupPage, body.live-mode .draw-page-toolbar, body.live-mode .draw-back-bar, body.live-mode #backToSetupBtn, body.live-mode #drawBtn, body.live-mode #undoBtn, body.live-mode #summaryBtn, body.live-mode #resetCurrentBtn, body.live-mode #resetAllBtn, body.live-mode #categorySelect, body.live-mode .assignment-controls, body.live-mode #dynamicRoleControls, body.live-mode #summaryModal { display:none !important; }
+    body.live-mode .footer-actions { display:none !important; }
+    body.live-mode #drawPage { display:block !important; }
+    body.live-mode .picker-layout { grid-template-columns:1fr; }
+    body.live-mode .draw-panel { min-height:260px; }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
 
@@ -889,6 +904,22 @@
   </style>
 </head>
 <body>
+  <div id="roleGate" class="role-gate">
+    <div class="gate-card">
+      <h2>MIDNIGHT GARAGE SYSTEM</h2>
+      <p>Pilih paparan. Admin mengawal cabutan dan tetapan; Live hanya melihat paparan masa nyata.</p>
+      <div class="gate-actions">
+        <button id="chooseAdmin" class="primary-btn" type="button">ADMIN</button>
+        <button id="chooseLive" class="secondary-btn" type="button">LIVE / PENONTON</button>
+      </div>
+      <div id="adminLogin" hidden>
+        <label for="adminPassword">Password Admin</label>
+        <input id="adminPassword" type="password" placeholder="Masukkan password" autocomplete="current-password" />
+        <button id="adminLoginBtn" class="primary-btn" type="button">Log Masuk Admin</button>
+      </div>
+      <div id="gateStatus" class="gate-status">Firebase belum disambungkan. Tetapkan konfigurasi dalam kod dahulu.</div>
+    </div>
+  </div>
   <main class="app">
     <header class="hero">
       <div class="hero-left">
@@ -1062,6 +1093,8 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
   (() => {
     const STORAGE_KEY = 'midnightGarageFlexibleListsV1';
@@ -1129,6 +1162,76 @@
       categories: []
     };
     state.categories = [defaultCategory(0, state.listTypes), defaultCategory(1, state.listTypes)];
+
+    // Firebase sama seperti Lucky Draw. Hanya database path yang berbeza.
+    const FIREBASE_CONFIG = {
+      databaseURL: "https://mg-luckydraw-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    const ADMIN_PASSWORD = "75944624";
+    const LIVE_PATH = "midnightGarageGroupDrawLiveV1"; // Path khusus Group Draw
+    let appRole = null, firebaseReady = false, database = null, liveRef = null;
+    let applyingRemote = false, liveAnimationTimer = null, lastDrawEventId = null;
+    const gate = document.getElementById('roleGate');
+    const gateStatus = document.getElementById('gateStatus');
+    const adminLogin = document.getElementById('adminLogin');
+    const initFirebase = () => {
+      if (!window.firebase || !FIREBASE_CONFIG.databaseURL) {
+        gateStatus.textContent = 'Firebase belum dapat dimulakan. Semak sambungan internet atau konfigurasi.';
+        return false;
+      }
+      try {
+        const appName = 'midnightGarageGroupDrawLive';
+        const app = firebase.apps.find(item => item.name === appName) || firebase.initializeApp(FIREBASE_CONFIG, appName);
+        database = firebase.database(app);
+        liveRef = database.ref(LIVE_PATH);
+        firebaseReady = true;
+        gateStatus.textContent = 'Firebase berjaya disediakan.';
+        return true;
+      } catch (e) { gateStatus.textContent = 'Firebase error: ' + e.message; return false; }
+    };
+    const enterAdmin = () => {
+      if (!firebaseReady && !initFirebase()) return;
+      appRole = 'admin'; gate.classList.add('hidden'); document.body.classList.remove('live-mode');
+      // Ambil data server jika ada, jika tiada publish data local yang telah dimuatkan.
+      liveRef.once('value').then(snap => {
+        const remote = snap.val();
+        if (remote && remote.state && remote.state.categories?.length) {
+          applyingRemote = true; state = remote.state; loadRemoteStateFixups(); applyingRemote = false; render();
+        } else { publishState(); }
+      }).catch(e => showToast('Firebase: ' + e.message, true));
+    };
+    const enterLive = () => {
+      if (!initFirebase()) return;
+      appRole = 'live'; document.body.classList.add('live-mode'); gate.classList.add('hidden');
+      el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); currentView='draw';
+      liveRef.on('value', snap => {
+        const remote = snap.val(); if (!remote) { gateStatus.textContent='Menunggu Admin memulakan sistem...'; return; }
+        if (remote.state) { applyingRemote=true; state=remote.state; loadRemoteStateFixups(); applyingRemote=false; render({preserveDrawMessage:true}); switchPageLive(); }
+        if (remote.drawEvent) receiveDrawEvent(remote.drawEvent);
+      }, error => showToast('Live sync error: '+error.message,true));
+    };
+    const loadRemoteStateFixups = () => { state.drawing = false; ensureActiveList(); if (!state.categories?.length) state.categories=[defaultCategory(0,state.listTypes)]; };
+    const switchPageLive = () => { currentView='draw'; el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); updatePageDescription(); };
+    const publishState = () => { if(appRole==='admin' && firebaseReady && liveRef && !applyingRemote) liveRef.child('state').set(JSON.parse(JSON.stringify(state))).catch(e=>showToast('Sync gagal: '+e.message,true)); };
+    const publishDrawEvent = event => { if(appRole==='admin' && firebaseReady && liveRef) liveRef.child('drawEvent').set(event).catch(e=>showToast('Sync cabutan gagal: '+e.message,true)); };
+    const receiveDrawEvent = event => {
+      if(appRole!=='live' || !event || event.id===lastDrawEventId) return;
+      lastDrawEventId=event.id;
+      if(event.status==='rolling') {
+        el.pickedName.classList.remove('winner'); el.pickedName.classList.add('rolling');
+        el.drawEyebrow.textContent=event.label || 'Sedang membuat cabutan...'; el.destination.textContent='';
+        const names=normalizeLines(event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
+        const endAt=Number(event.startedAt)+Number(event.duration||1000);
+        const spin=()=>{ if(Date.now()>=endAt){clearInterval(liveAnimationTimer);return;} if(names.length) renderDrawNames(pickUniqueRandom(names,Number(event.count)||1).map(name=>({name})),false); };
+        clearInterval(liveAnimationTimer); spin(); liveAnimationTimer=setInterval(spin,90);
+      } else if(event.status==='done') {
+        clearInterval(liveAnimationTimer); el.pickedName.classList.remove('rolling');
+        renderDrawNames((event.winners||[]).map(name=>({name,teamName:event.teamName})),true);
+        el.pickedName.classList.remove('winner'); void el.pickedName.offsetWidth; el.pickedName.classList.add('winner');
+        el.drawEyebrow.textContent=event.label||'Cabutan selesai'; el.destination.textContent=event.destination||'';
+      } else if(event.status==='reset') { clearInterval(liveAnimationTimer); showIdleLogo(); el.destination.textContent=''; el.drawEyebrow.textContent='Menunggu cabutan'; }
+    };
+
 
     const el = {
       setupPage: document.getElementById('setupPage'),
@@ -1202,11 +1305,10 @@
     };
 
     const saveState = () => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (error) {
-        console.warn('Tidak dapat menyimpan data:', error);
+      if (appRole !== 'live') {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (error) { console.warn('Tidak dapat menyimpan data:', error); }
       }
+      publishState();
     };
 
     const sanitizeListTypes = (items) => {
@@ -1517,6 +1619,7 @@
 
     const render = ({ preserveDrawMessage = false } = {}) => {
       ensureActiveList();
+      if (appRole === 'live') { document.body.classList.add('live-mode'); switchPageLive(); }
       const category = getCategory();
       if (!category) return;
 
@@ -1811,6 +1914,7 @@
     };
 
     const drawName = () => {
+      if (appRole === 'live') return;
       if (state.drawing) return;
       const category = getCategory();
       const listId = state.activeListId;
@@ -1847,6 +1951,7 @@
       el.destination.textContent = '';
       el.drawEyebrow.textContent = `Sedang membuat cabutan ${count} nama...`;
       startSpinSound();
+      publishDrawEvent({ id: makeId('draw-event'), status:'rolling', startedAt:Date.now(), duration:ROLL_DURATION, listId, count, rollingNames:[...names], categoryName:category.name, teamName:assignedTeam.name, label:`Sedang membuat cabutan ${count} nama...` });
 
       const rollStart = performance.now();
       const roll = (now) => {
@@ -1892,6 +1997,7 @@
           : `Semua masuk ${assignedTeam.name}`;
         el.drawBtn.disabled = false;
         showToast(`${count} nama dimasukkan ke ${assignedTeam.name}.`);
+        publishDrawEvent({ id: makeId('draw-event'), status:'done', winners:[...winners], teamName:assignedTeam.name, listId, count, label: count===1 ? `${listLabel(listId)} terpilih` : `${count} ${listLabel(listId)} terpilih`, destination: count===1 ? `Masuk ${assignedTeam.name}` : `Semua masuk ${assignedTeam.name}` });
       };
       requestAnimationFrame(roll);
     };
@@ -1958,6 +2064,7 @@
       category.manualTeamId = category.teams[0].id;
       category.history = [];
       saveState();
+      publishDrawEvent({id:makeId('reset-event'),status:'reset'});
       render();
       showToast('Kategori ini telah direset.');
     };
@@ -1978,6 +2085,7 @@
         categories: [defaultCategory(0, savedListTypes), defaultCategory(1, savedListTypes)]
       };
       saveState();
+      publishDrawEvent({id:makeId('reset-event'),status:'reset'});
       render();
       showToast('Semua data telah direset.');
     };
@@ -2118,6 +2226,10 @@
     });
     window.addEventListener('beforeunload', stopSpinSound);
 
+    document.getElementById('chooseAdmin').addEventListener('click', () => { adminLogin.hidden=false; document.getElementById('adminPassword').focus(); });
+    document.getElementById('adminLoginBtn').addEventListener('click', () => { if(document.getElementById('adminPassword').value===ADMIN_PASSWORD) enterAdmin(); else gateStatus.textContent='Password Admin salah.'; });
+    document.getElementById('adminPassword').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('adminLoginBtn').click(); });
+    document.getElementById('chooseLive').addEventListener('click', enterLive);
     loadState();
     render();
     switchPage('setup');
