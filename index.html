@@ -1216,8 +1216,10 @@
     const publishState = () => { if(appRole==='admin' && firebaseReady && liveRef && !applyingRemote) liveRef.child('state').set(JSON.parse(JSON.stringify(state))).catch(e=>showToast('Sync gagal: '+e.message,true)); };
     const publishDrawEvent = event => { if(appRole==='admin' && firebaseReady && liveRef) liveRef.child('drawEvent').set(event).catch(e=>showToast('Sync cabutan gagal: '+e.message,true)); };
     const receiveDrawEvent = event => {
-      if(appRole!=='live' || !event || event.id===lastDrawEventId) return;
-      lastDrawEventId=event.id;
+         const eventKey = `${event?.id || ''}_${event?.status || ''}`;
+    if(appRole!=='live' || !event || eventKey===lastDrawEventId) return;
+    lastDrawEventId=eventKey;
+    if(event.status==='done') { state.drawing = false; render({preserveDrawMessage:true}); }
       if(event.status==='rolling') {
         el.pickedName.classList.remove('winner'); el.pickedName.classList.add('rolling');
         el.drawEyebrow.textContent=event.label || 'Sedang membuat cabutan...'; el.destination.textContent='';
