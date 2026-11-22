@@ -1204,11 +1204,12 @@
       if (!initFirebase()) return;
       appRole = 'live'; document.body.classList.add('live-mode'); gate.classList.add('hidden');
       el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); currentView='draw';
-      liveRef.on('value', snap => {
-        const remote = snap.val(); if (!remote) { gateStatus.textContent='Menunggu Admin memulakan sistem...'; return; }
-        if (remote.state) { applyingRemote=true; state=remote.state; loadRemoteStateFixups(); applyingRemote=false; render({preserveDrawMessage:true}); switchPageLive(); }
-        if (remote.drawEvent) receiveDrawEvent(remote.drawEvent);
-      }, error => showToast('Live sync error: '+error.message,true));
+    liveRef.on('value', snap => {
+      const remote = snap.val(); if (!remote) { gateStatus.textContent='Menunggu Admin memulakan sistem...'; return; }
+      if (remote.drawEvent && remote.drawEvent.status === 'rolling') { state.drawing = true; }
+      if (remote.state) { applyingRemote=true; state=remote.state; loadRemoteStateFixups(); if (remote.drawEvent?.status === 'rolling') state.drawing = true; applyingRemote=false; render({preserveDrawMessage:true}); switchPageLive(); }
+      if (remote.drawEvent) receiveDrawEvent(remote.drawEvent);
+    }, error => showToast('Live sync error: '+error.message,true));
     };
     const loadRemoteStateFixups = () => { state.drawing = false; ensureActiveList(); if (!state.categories?.length) state.categories=[defaultCategory(0,state.listTypes)]; };
     const switchPageLive = () => { currentView='draw'; el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); updatePageDescription(); };
