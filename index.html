@@ -1247,7 +1247,9 @@
         el.drawEyebrow.textContent = event.label || 'Sedang membuat cabutan...';
         el.destination.textContent = '';
         startSpinSound();
-        const names = normalizeLines(event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
+                const rawRolling = Array.isArray(event.rollingNames) ? event.rollingNames.join('\n') : (event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
+        const names = normalizeLines(rawRolling);
+
         const count = Number(event.count) || 1;
         const endAt = Number(event.startedAt) + Number(event.duration || 1000);
         let idx = 0;
