@@ -1220,30 +1220,56 @@
       }
     }, error => showToast('Live sync error: ' + error.message, true));
     };
-    const loadRemoteStateFixups = () => { state.drawing = false; ensureActiveList(); if (!state.categories?.length) state.categories=[defaultCategory(0,state.listTypes)]; };
+        const loadRemoteStateFixups = () => {
+      state.drawing = false;
+      state.listTypes = sanitizeListTypes(state.listTypes);
+      ensureActiveList();
+      if (!Array.isArray(state.categories) || !state.categories.length) {
+        state.categories = [defaultCategory(0, state.listTypes)];
+      } else {
+        state.categories = state.categories.map((cat, idx) => sanitizeCategory(cat, idx, state.listTypes));
+      }
+    };
+
     const switchPageLive = () => { currentView='draw'; el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); updatePageDescription(); };
     const publishState = () => { if(appRole==='admin' && firebaseReady && liveRef && !applyingRemote) liveRef.child('state').set(JSON.parse(JSON.stringify(state))).catch(e=>showToast('Sync gagal: '+e.message,true)); };
     const publishDrawEvent = event => { if(appRole==='admin' && firebaseReady && liveRef) liveRef.child('drawEvent').set(event).catch(e=>showToast('Sync cabutan gagal: '+e.message,true)); };
-    const receiveDrawEvent = event => {
-         const eventKey = `${event?.id || ''}_${event?.status || ''}`;
-    if(appRole!=='live' || !event || eventKey===lastDrawEventId) return;
-    lastDrawEventId=eventKey;
-    if(event.status==='done') { state.drawing = false; render({preserveDrawMessage:true}); }
-      if(event.status==='rolling') {
-        el.pickedName.classList.remove('winner'); el.pickedName.classList.add('rolling');
-        el.drawEyebrow.textContent=event.label || 'Sedang membuat cabutan...'; el.destination.textContent='';
-        const names=normalizeLines(event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
-        const endAt=Number(event.startedAt)+Number(event.duration||1000);
-        const spin=()=>{ if(Date.now()>=endAt){clearInterval(liveAnimationTimer);return;} if(names.length) renderDrawNames(pickUniqueRandom(names,Number(event.count)||1).map(name=>({name})),false); };
-        clearInterval(liveAnimationTimer); spin(); liveAnimationTimer=setInterval(spin,90);
-      } else if(event.status==='done') {
-        clearInterval(liveAnimationTimer); el.pickedName.classList.remove('rolling');
-        renderDrawNames((event.winners||[]).map(name=>({name,teamName:event.teamName})),true);
-        el.pickedName.classList.remove('winner'); void el.pickedName.offsetWidth; el.pickedName.classList.add('winner');
-        el.drawEyebrow.textContent=event.label||'Cabutan selesai'; el.destination.textContent=event.destination||'';
-      } else if(event.status==='reset') { clearInterval(liveAnimationTimer); showIdleLogo(); el.destination.textContent=''; el.drawEyebrow.textContent='Menunggu cabutan'; }
+       const receiveDrawEvent = event => {
+      const eventKey = `${event?.id || ''}_${event?.status || ''}`;
+      if (appRole !== 'live' || !event || eventKey === lastDrawEventId) return;
+      lastDrawEventId = eventKey;
+      if (event.status === 'rolling') {
+        el.pickedName.classList.remove('winner');
+        el.pickedName.classList.add('rolling');
+        el.drawEyebrow.textContent = event.label || 'Sedang membuat cabutan...';
+        el.destination.textContent = '';
+        const names = normalizeLines(event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
+        const endAt = Number(event.startedAt) + Number(event.duration || 1000);
+        const spin = () => {
+          if (Date.now() >= endAt) { clearInterval(liveAnimationTimer); return; }
+          if (names.length) renderDrawNames(pickUniqueRandom(names, Number(event.count) || 1).map(name => ({ name })), false);
+        };
+        clearInterval(liveAnimationTimer);
+        spin();
+        liveAnimationTimer = setInterval(spin, 90);
+      } else if (event.status === 'done') {
+        clearInterval(liveAnimationTimer);
+        el.pickedName.classList.remove('rolling');
+        state.drawing = false;
+        render({ preserveDrawMessage: true });
+        renderDrawNames((event.winners || []).map(name => ({ name, teamName: event.teamName })), true);
+        el.pickedName.classList.remove('winner');
+        void el.pickedName.offsetWidth;
+        el.pickedName.classList.add('winner');
+        el.drawEyebrow.textContent = event.label || 'Cabutan selesai';
+        el.destination.textContent = event.destination || '';
+      } else if (event.status === 'reset') {
+        clearInterval(liveAnimationTimer);
+        showIdleLogo();
+        el.destination.textContent = '';
+        el.drawEyebrow.textContent = 'Menunggu cabutan';
+      }
     };
-
 
     const el = {
       setupPage: document.getElementById('setupPage'),
