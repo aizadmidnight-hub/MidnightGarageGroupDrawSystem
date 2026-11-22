@@ -1204,21 +1204,23 @@
       if (!initFirebase()) return;
       appRole = 'live'; document.body.classList.add('live-mode'); gate.classList.add('hidden');
       el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); currentView='draw';
-       liveRef.on('value', snap => {
-      const remote = snap.val(); if (!remote) { gateStatus.textContent='Menunggu Admin memulakan sistem...'; return; }
-      if (remote.state) {
-        applyingRemote = true;
-        state = remote.state;
-        loadRemoteStateFixups();
-        if (remote.drawEvent && remote.drawEvent.status === 'rolling') state.drawing = true;
-        applyingRemote = false;
-        render({ preserveDrawMessage: true });
-        switchPageLive();
-      }
-      if (remote.drawEvent) {
-        setTimeout(() => receiveDrawEvent(remote.drawEvent), 50);
-      }
-    }, error => showToast('Live sync error: ' + error.message, true));
+            liveRef.on('value', snap => {
+        const remote = snap.val();
+        if (!remote) { gateStatus.textContent = 'Menunggu Admin memulakan sistem...'; return; }
+        const isRolling = remote.drawEvent && remote.drawEvent.status === 'rolling';
+        if (remote.state && !isRolling) {
+          applyingRemote = true;
+          state = remote.state;
+          loadRemoteStateFixups();
+          applyingRemote = false;
+          render({ preserveDrawMessage: true });
+          switchPageLive();
+        }
+        if (remote.drawEvent) {
+          receiveDrawEvent(remote.drawEvent);
+        }
+      }, error => showToast('Live sync error: ' + error.message, true));
+
     };
         const loadRemoteStateFixups = () => {
       state.drawing = false;
@@ -1234,26 +1236,36 @@
     const switchPageLive = () => { currentView='draw'; el.setupPage.classList.remove('active'); el.drawPage.classList.add('active'); updatePageDescription(); };
     const publishState = () => { if(appRole==='admin' && firebaseReady && liveRef && !applyingRemote) liveRef.child('state').set(JSON.parse(JSON.stringify(state))).catch(e=>showToast('Sync gagal: '+e.message,true)); };
     const publishDrawEvent = event => { if(appRole==='admin' && firebaseReady && liveRef) liveRef.child('drawEvent').set(event).catch(e=>showToast('Sync cabutan gagal: '+e.message,true)); };
-       const receiveDrawEvent = event => {
+          const receiveDrawEvent = event => {
       const eventKey = `${event?.id || ''}_${event?.status || ''}`;
       if (appRole !== 'live' || !event || eventKey === lastDrawEventId) return;
       lastDrawEventId = eventKey;
       if (event.status === 'rolling') {
+        clearInterval(liveAnimationTimer);
         el.pickedName.classList.remove('winner');
         el.pickedName.classList.add('rolling');
         el.drawEyebrow.textContent = event.label || 'Sedang membuat cabutan...';
         el.destination.textContent = '';
+        startSpinSound();
         const names = normalizeLines(event.rollingNames || getCategory()?.inputs?.[event.listId] || '');
+        const count = Number(event.count) || 1;
         const endAt = Number(event.startedAt) + Number(event.duration || 1000);
+        let idx = 0;
         const spin = () => {
           if (Date.now() >= endAt) { clearInterval(liveAnimationTimer); return; }
-          if (names.length) renderDrawNames(pickUniqueRandom(names, Number(event.count) || 1).map(name => ({ name })), false);
+          if (!names.length) return;
+          const batch = [];
+          for (let i = 0; i < count; i++) {
+            batch.push({ name: names[(idx + i) % names.length] });
+          }
+          idx = (idx + 1) % names.length;
+          renderDrawNames(batch, false);
         };
-        clearInterval(liveAnimationTimer);
         spin();
-        liveAnimationTimer = setInterval(spin, 90);
+        liveAnimationTimer = setInterval(spin, 65);
       } else if (event.status === 'done') {
         clearInterval(liveAnimationTimer);
+        stopSpinSound();
         el.pickedName.classList.remove('rolling');
         state.drawing = false;
         render({ preserveDrawMessage: true });
@@ -1265,6 +1277,7 @@
         el.destination.textContent = event.destination || '';
       } else if (event.status === 'reset') {
         clearInterval(liveAnimationTimer);
+        stopSpinSound();
         showIdleLogo();
         el.destination.textContent = '';
         el.drawEyebrow.textContent = 'Menunggu cabutan';
